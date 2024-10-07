@@ -1,7 +1,7 @@
 <launch>
   <!-- size of map, change the size inflate x, y, z according to your application -->
-  <arg name="map_size_x" value="40.0"/>
-  <arg name="map_size_y" value="40.0"/>
+  <arg name="map_size_x" value="800.0"/>
+  <arg name="map_size_y" value="800.0"/>
   <arg name="map_size_z" value=" 3.0"/>
 
   <!-- topic of your odometry such as VIO or LIO -->
@@ -32,40 +32,113 @@
     <arg name="fy" value="387.229248046875"/>
 
     <!-- maximum velocity and acceleration the drone will reach -->
-    <arg name="max_vel" value="2.0" />
-    <arg name="max_acc" value="3.0" />
+    <arg name="max_vel" value="5.0" />
+    <arg name="max_acc" value="1.0" />
 
     <!--always set to 1.5 times grater than sensing horizen-->
-    <arg name="planning_horizon" value="7.5" /> 
+    <arg name="planning_horizon" value="10" />
 
     <!-- 1: use 2D Nav Goal to select goal  -->
     <!-- 2: use global waypoints below  -->
-    <arg name="flight_type" value="1" />
-    
+    <!-- 4: use global waypoints below, force to pass waypoints  -->
+    <arg name="flight_type" value="4" />
+
     <!-- global waypoints -->
     <!-- It generates a piecewise min-snap traj passing all waypoints -->
-    <arg name="point_num" value="5" />
+    <arg name="point_num" value="19" />
 
-    <arg name="point0_x" value="-15.0" />
-    <arg name="point0_y" value="0.0" />
+    <arg name="point0_x" value="-9.113380432128906" />
+    <arg name="point0_y" value="7.448345184326172" />
     <arg name="point0_z" value="1.0" />
 
-    <arg name="point1_x" value="0.0" />
-    <arg name="point1_y" value="15.0" />
+    <arg name="point1_x" value="2.838803768157959" />
+    <arg name="point1_y" value="1.4581215381622314" />
     <arg name="point1_z" value="1.0" />
 
-    <arg name="point2_x" value="15.0" />
-    <arg name="point2_y" value="0.0" />
+    <arg name="point2_x" value="16.48647117614746" />
+    <arg name="point2_y" value="-8.002549171447754" />
     <arg name="point2_z" value="1.0" />
 
-    <arg name="point3_x" value="0.0" />
-    <arg name="point3_y" value="-15.0" />
+    <arg name="point3_x" value="29.710586547851562" />
+    <arg name="point3_y" value="-16.33689308166504" />
     <arg name="point3_z" value="1.0" />
 
-    <arg name="point4_x" value="-15.0" />
-    <arg name="point4_y" value="0.0" />
+    <arg name="point4_x" value="44.629417419433594" />
+    <arg name="point4_y" value="-25.985960006713867" />
     <arg name="point4_z" value="1.0" />
-    
+
+    <arg name="point5_x" value="52.27859115600586" />
+    <arg name="point5_y" value="-46.60517501831055" />
+    <arg name="point5_z" value="1.0" />
+
+    <arg name="point6_x" value="71.30591583251953" />
+    <arg name="point6_y" value="-57.08982849121094" />
+    <arg name="point6_z" value="1.0" />
+
+    <arg name="point7_x" value="104.7271499633789" />
+    <arg name="point7_y" value="-54.56385803222656" />
+    <arg name="point7_z" value="1.0" />
+
+    <arg name="point8_x" value="157.04681396484375" />
+    <arg name="point8_y" value="-85.21562194824219" />
+    <arg name="point8_z" value="1.0" />
+
+    <arg name="point9_x" value="183.12486267089844" />
+    <arg name="point9_y" value="-100.3686752319336" />
+    <arg name="point9_z" value="1.0" />
+
+    <arg name="point10_x" value="206.4261474609375" />
+    <arg name="point10_y" value="-112.28486633300781" />
+    <arg name="point10_z" value="1.0" />
+
+    <arg name="point11_x" value="228.5936737060547" />
+    <arg name="point11_y" value="-125.93013000488281" />
+    <arg name="point11_z" value="1.0" />
+
+    <arg name="point12_x" value="244.15267944335938" />
+    <arg name="point12_y" value="-99.5115966796875" />
+    <arg name="point12_z" value="1.0" />
+
+    <arg name="point13_x" value="261.6739807128906" />
+    <arg name="point13_y" value="-74.5774917602539" />
+    <arg name="point13_z" value="1.0" />
+
+    <arg name="point14_x" value="282.8183898925781" />
+    <arg name="point14_y" value="-52.42805480957031" />
+    <arg name="point14_z" value="1.0" />
+
+    <arg name="point15_x" value="304.6809997558594" />
+    <arg name="point15_y" value="-29.79011344909668" />
+    <arg name="point15_z" value="1.0" />
+
+    <arg name="point16_x" value="327.44866943359375" />
+    <arg name="point16_y" value="-5.881252288818359" />
+    <arg name="point16_z" value="1.0" />
+
+    <arg name="point17_x" value="343.7927551269531" />
+    <arg name="point17_y" value="20.023948669433594" />
+    <arg name="point17_z" value="1.0" />
+
+    <arg name="point18_x" value="357.5707702636719" />
+    <arg name="point18_y" value="42.78702163696289" />
+    <arg name="point18_z" value="1.0" />
+
+    <arg name="point19_x" value="371.1968078613281" />
+    <arg name="point19_y" value="68.01303100585938" />
+    <arg name="point19_z" value="1.0" />
+
+    <arg name="point20_x" value="381.24188232421875" />
+    <arg name="point20_y" value="95.26945495605469" />
+    <arg name="point20_z" value="1.0" />
+
+    <arg name="point21_x" value="393.394287109375" />
+    <arg name="point21_y" value="135.8115692138672" />
+    <arg name="point21_z" value="1.0" />
+
+    <arg name="point22_x" value="399.95294189453125" />
+    <arg name="point22_y" value="175.6368408203125" />
+    <arg name="point22_z" value="1.0" />
+
   </include>
 
   <!-- trajectory server -->
@@ -77,10 +150,10 @@
   </node>
 
   <node pkg="waypoint_generator" name="waypoint_generator" type="waypoint_generator" output="screen">
-    <remap from="~odom" to="$(arg odom_topic)"/>        
+    <remap from="~odom" to="$(arg odom_topic)"/>
     <remap from="~goal" to="/move_base_simple/goal"/>
     <remap from="~traj_start_trigger" to="/traj_start_trigger" />
-    <param name="waypoint_type" value="manual-lonely-waypoint"/>    
+    <param name="waypoint_type" value="manual-lonely-waypoint"/>
   </node>
 
   <!-- use simulator -->
@@ -93,6 +166,14 @@
     <arg name="min_dist" value="1.2"/>
 
     <arg name="odometry_topic" value="$(arg odom_topic)" />
+  </include>
+
+  <!-- pcd map -->
+  <include file="$(find mockamap)/config/pcd_map_generate.xml">
+    <arg name="map_size_x" value="$(arg map_size_x)"/>
+    <arg name="map_size_y" value="$(arg map_size_y)"/>
+    <arg name="map_size_z" value="$(arg map_size_z)"/>
+    <arg name="pcd_path" value="/home/hw/projects/ego-planner-ws/map/map.pcd"/>
   </include>
 
 </launch>

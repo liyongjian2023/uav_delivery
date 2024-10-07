@@ -18,6 +18,8 @@
 #include <plan_manage/planner_manager.h>
 #include <traj_utils/planning_visualization.h>
 
+#define WAYPOINT_MODE
+
 using std::vector;
 
 namespace ego_planner
@@ -41,7 +43,10 @@ namespace ego_planner
     {
       MANUAL_TARGET = 1,
       PRESET_TARGET = 2,
-      REFENCE_PATH = 3
+      REFENCE_PATH = 3,
+#ifdef WAYPOINT_MODE
+      WAYPOINT_TARGET = 4,
+#endif
     };
 
     /* planning utils */
@@ -52,7 +57,11 @@ namespace ego_planner
     /* parameters */
     int target_type_; // 1 mannual select, 2 hard code
     double no_replan_thresh_, replan_thresh_;
-    double waypoints_[50][3];
+    double waypoints_[256][3];
+#ifdef WAYPOINT_MODE
+    double global_waypoints_[256][3];
+    int global_waypoint_num_;
+#endif
     int waypoint_num_;
     double planning_horizen_, planning_horizen_time_;
     double emergency_time_;
@@ -77,6 +86,11 @@ namespace ego_planner
     ros::Timer exec_timer_, safety_timer_;
     ros::Subscriber waypoint_sub_, odom_sub_;
     ros::Publisher replan_pub_, new_pub_, bspline_pub_, data_disp_pub_;
+
+#ifdef WAYPOINT_MODE
+    ros::Publisher waypoint_pub_;
+    void publish_next_waypoints(int k);
+#endif
 
     /* helper functions */
     bool callReboundReplan(bool flag_use_poly_init, bool flag_randomPolyTraj); // front-end and back-end method

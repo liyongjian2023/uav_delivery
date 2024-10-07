@@ -41,8 +41,46 @@ namespace ego_planner
     bspline_pub_ = nh.advertise<ego_planner::Bspline>("/planning/bspline", 10);
     data_disp_pub_ = nh.advertise<ego_planner::DataDisp>("/planning/data_display", 100);
 
-    if (target_type_ == TARGET_TYPE::MANUAL_TARGET)
+#ifdef WAYPOINT_MODE
+    std::ifstream file("/home/hw/projects/ego-planner-ws/map/route.csv");
+    std::string line;
+
+    if (!file.is_open())
+    {
+      std::cerr << "Unable to open file!" << std::endl;
+      return;
+    }
+
+    int i = 0;
+
+    while (std::getline(file, line))
+    {
+      std::stringstream ss(line);
+      std::string x_str, y_str;
+
+      // 读取 x 坐标
+      if (std::getline(ss, x_str, ',') && std::getline(ss, y_str, ','))
+      {
+        global_waypoints_[i][0] = std::stod(x_str);
+        global_waypoints_[i][1] = std::stod(y_str);
+        // global_waypoints_[i][2] = std::stod(z_str);
+        global_waypoints_[i][2] = 2;
+      }
+
+      cout << i << "th waypoints: (" << global_waypoints_[i][0] << ", " << global_waypoints_[i][1] << ", " << global_waypoints_[i][2] << ")" << endl;
+      i++;
+    }
+
+    global_waypoint_num_ = i;
+#endif
+
+    if (target_type_ == TARGET_TYPE::MANUAL_TARGET || target_type_ == TARGET_TYPE::WAYPOINT_TARGET)
+    {
       waypoint_sub_ = nh.subscribe("/waypoint_generator/waypoints", 1, &EGOReplanFSM::waypointCallback, this);
+#ifdef WAYPOINT_MODE
+      waypoint_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 100);
+#endif
+    }
     else if (target_type_ == TARGET_TYPE::PRESET_TARGET)
     {
       ros::Duration(1.0).sleep();
@@ -54,6 +92,7 @@ namespace ego_planner
       cout << "Wrong target_type_ value! target_type_=" << target_type_ << endl;
   }
 
+  /// 路标点导航模式
   void EGOReplanFSM::planGlobalTrajbyGivenWps()
   {
     std::vector<Eigen::Vector3d> wps(waypoint_num_);
@@ -158,6 +197,8 @@ namespace ego_planner
     odom_pos_(1) = msg->pose.pose.position.y;
     odom_pos_(2) = msg->pose.pose.position.z;
 
+    // printf("Received odom position: (%f, %f, %f)\n", odom_pos_(0), odom_pos_(1), odom_pos_(2));
+
     odom_vel_(0) = msg->twist.twist.linear.x;
     odom_vel_(1) = msg->twist.twist.linear.y;
     odom_vel_(2) = msg->twist.twist.linear.z;
@@ -174,7 +215,6 @@ namespace ego_planner
 
   void EGOReplanFSM::changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call)
   {
-
     if (new_state == exec_state_)
       continously_called_times_++;
     else
@@ -183,7 +223,8 @@ namespace ego_planner
     static string state_str[7] = {"INIT", "WAIT_TARGET", "GEN_NEW_TRAJ", "REPLAN_TRAJ", "EXEC_TRAJ", "EMERGENCY_STOP"};
     int pre_s = int(exec_state_);
     exec_state_ = new_state;
-    cout << "[" + pos_call + "]: from " + state_str[pre_s] + " to " + state_str[int(new_state)] << endl;
+    cout << "[" + pos_call + "]: change state from " + state_str[pre_s] + " to " + state_str[int(new_state)] << endl;
+    // ROS_INFO("[%s]: chanage state from %s to %s.", pos_call.c_str(), state_str[pre_s].c_str(), state_str[int(new_state)].c_str());
   }
 
   std::pair<int, EGOReplanFSM::FSM_EXEC_STATE> EGOReplanFSM::timesOfConsecutiveStateCalls()
@@ -198,9 +239,28 @@ namespace ego_planner
     cout << "[FSM]: state: " + state_str[int(exec_state_)] << endl;
   }
 
+#ifdef WAYPOINT_MODE
+  void EGOReplanFSM::publish_next_waypoints(int k)
+  {
+    geometry_msgs::PoseStamped goal_msg;
+    goal_msg.header.frame_id = "map";
+    goal_msg.header.stamp = ros::Time::now();
+    goal_msg.pose.position.x = global_waypoints_[k][0];
+    goal_msg.pose.position.y = global_waypoints_[k][1];
+    goal_msg.pose.position.z = global_waypoints_[k][2];
+    goal_msg.pose.orientation.w = 0;
+    goal_msg.pose.orientation.x = 0;
+    goal_msg.pose.orientation.y = 0;
+    goal_msg.pose.orientation.z = 0;
+
+    printf("Publish %d/%d wapoints.", k, global_waypoint_num_);
+
+    waypoint_pub_.publish(goal_msg);
+  }
+#endif
+
   void EGOReplanFSM::execFSMCallback(const ros::TimerEvent &e)
   {
-
     static int fsm_num = 0;
     fsm_num++;
     if (fsm_num == 100)
@@ -221,22 +281,40 @@ namespace ego_planner
       {
         return;
       }
+#ifndef WAYPOINT_MODE
       if (!trigger_)
       {
         return;
       }
       changeFSMExecState(WAIT_TARGET, "FSM");
+#else
+      if (target_type_ == TARGET_TYPE::WAYPOINT_TARGET)
+      {
+        changeFSMExecState(WAIT_TARGET, "FSM");
+      }
+#endif
       break;
     }
 
     case WAIT_TARGET:
     {
+#ifdef WAYPOINT_MODE
+      static int k = 0;
+      if (k < global_waypoint_num_)
+      {
+        publish_next_waypoints(k);
+        k++;
+        changeFSMExecState(GEN_NEW_TRAJ, "FSM");
+      }
+      // changeFSMExecState(GEN_NEW_TRAJ, "FSM");
+#else
       if (!have_target_)
         return;
       else
       {
         changeFSMExecState(GEN_NEW_TRAJ, "FSM");
       }
+#endif
       break;
     }
 
@@ -507,6 +585,7 @@ namespace ego_planner
 
     double t_step = planning_horizen_ / 20 / planner_manager_->pp_.max_vel_;
     double dist_min = 9999, dist_min_t = 0.0;
+
     for (t = planner_manager_->global_data_.last_progress_time_; t < planner_manager_->global_data_.global_duration_; t += t_step)
     {
       Eigen::Vector3d pos_t = planner_manager_->global_data_.getPosition(t);
@@ -515,10 +594,6 @@ namespace ego_planner
       if (t < planner_manager_->global_data_.last_progress_time_ + 1e-5 && dist > planning_horizen_)
       {
         // todo
-        ROS_ERROR("last_progress_time_ ERROR !!!!!!!!!");
-        ROS_ERROR("last_progress_time_ ERROR !!!!!!!!!");
-        ROS_ERROR("last_progress_time_ ERROR !!!!!!!!!");
-        ROS_ERROR("last_progress_time_ ERROR !!!!!!!!!");
         ROS_ERROR("last_progress_time_ ERROR !!!!!!!!!");
         return;
       }
